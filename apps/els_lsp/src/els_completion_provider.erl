@@ -1193,7 +1193,14 @@ record_fields_with_var(Document, RecordName) ->
 format_record_field_with_var(Name, true) ->
     Label = atom_to_label(Name),
     Var = els_utils:camel_case(Label),
-    <<Label/binary, " = ${1:", Var/binary, "}">>;
+    Size = bit_size(Var) - 16,
+    Var2 =
+        case Size >= 0 andalso Var of
+            <<H:Size, "id">> -> <<H:Size, "ID">>;
+            <<H:Size, "Id">> -> <<H:Size, "ID">>;
+            _ -> Var
+        end,
+    <<Label/binary, " = ${1:", Var2/binary, "}">>;
 format_record_field_with_var(Name, false) ->
     atom_to_label(Name).
 
