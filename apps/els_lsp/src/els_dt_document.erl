@@ -364,6 +364,8 @@ tokens_to_words([{string, _Location, String} | Tokens], Words) ->
         _ ->
             tokens_to_words(Tokens, Words)
     end;
+tokens_to_words([{var, _Location, Var} | Tokens], Words) ->
+    tokens_to_words(Tokens, sets:add_element(Var, Words));
 tokens_to_words([{'?', _}, {var, _, Macro} | Tokens], Words) ->
     tokens_to_words(Tokens, sets:add_element(Macro, Words));
 tokens_to_words([{'-', _}, {atom, _, define}, {'(', _}, {var, _, Macro} | Tokens], Words) ->
