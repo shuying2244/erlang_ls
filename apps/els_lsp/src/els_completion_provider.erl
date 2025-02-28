@@ -39,6 +39,7 @@ trigger_characters() ->
     [
         <<":">>,
         <<"#">>,
+        <<"%">>,
         <<"?">>,
         <<".">>,
         <<"-">>,
@@ -223,6 +224,12 @@ find_completions(
     #{trigger := <<"#">>, document := Document}
 ) ->
     definitions(Document, record);
+find_completions(
+    _Prefix,
+    ?COMPLETION_TRIGGER_KIND_CHARACTER,
+    #{trigger := <<"%">>, document := Document}
+) ->
+    protocols(Document);
 find_completions(
     Prefix,
     ?COMPLETION_TRIGGER_KIND_CHARACTER,
@@ -975,6 +982,23 @@ unexported_definitions(Document, POIKind) ->
     AllDefs = definitions(Document, POIKind, arity_only, false),
     ExportedDefs = definitions(Document, POIKind, arity_only, true),
     AllDefs -- ExportedDefs.
+
+-define(PROTO_TYPES, [#{data => #{}, label => Label, kind => ?COMPLETION_ITEM_KIND_STRUCT}
+    || Label <- [
+        <<"int8">>, <<"int16">>, <<"int32">>, <<"int64">>,
+        <<"uint8">>, <<"uint16">>, <<"uint32">>, <<"uint64">>,
+        <<"float">>, <<"double">>, <<"bool">>, <<"string">>, <<"bytes">>,
+        <<"maps">>, <<"oneof">>, <<"ignore">>
+    ]]).
+
+-spec protocols(els_dt_document:item()) -> [map()].
+protocols(Document) ->
+    case Document of
+        #{id := protocol_record} ->
+            ?PROTO_TYPES ++ [M
+                || #{label := <<"p_", _/binary>>} = M <- definitions(Document, record)];
+        _ -> []
+    end.
 
 -spec definitions(els_dt_document:item(), els_poi:poi_kind()) -> [map()].
 definitions(Document, POIKind) ->
