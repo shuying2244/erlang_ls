@@ -67,24 +67,39 @@ create_function(Uri, Range0, _Data, [UndefinedFun]) ->
     end.
 
 -spec export_function(uri(), range(), binary(), [binary()]) -> [map()].
-export_function(Uri, _Range, _Data, [UnusedFun]) ->
+export_function(Uri, Range, _Data, [UnusedFun]) ->
+    #{from := {Line, _}} = els_range:to_poi_range(Range),
+    Nowarn = make_edit_action(
+        Uri,
+        <<"Nowarn ", UnusedFun/binary>>,
+        ?CODE_ACTION_KIND_QUICKFIX,
+        <<"-compile({nowarn_unused_function, [", UnusedFun/binary, "]}).\n">>,
+        els_protocol:range(#{from => {Line, 1}, to => {Line, 1}})
+    ),
     {ok, Document} = els_utils:lookup_document(Uri),
-    case els_poi:sort(els_dt_document:pois(Document, [module, export])) of
+    case lists:reverse(els_poi:sort(els_dt_document:pois(Document, [export, export_entry]))) of
         [] ->
-            [];
+            [Nowarn];
         POIs ->
-            #{range := #{to := {Line, _Col}}} = lists:last(POIs),
-            Pos = {Line + 1, 1},
+            {Text, Pos} = calc_text_pos(POIs, UnusedFun),
             [
                 make_edit_action(
                     Uri,
                     <<"Export ", UnusedFun/binary>>,
                     ?CODE_ACTION_KIND_QUICKFIX,
-                    <<"-export([", UnusedFun/binary, "]).\n">>,
+                    Text,
                     els_protocol:range(#{from => Pos, to => Pos})
-                )
+                ), Nowarn
             ]
     end.
+
+-spec calc_text_pos(els_poi:poi(), binary()) -> {binary(), els_poi:poi_range()}.
+calc_text_pos([#{range := #{to := {Line, _Col}}, kind := export},
+    #{range := #{to := {L, _} = To}, kind := export_entry} | _], UnusedFun
+) ->
+    {<<(case L of Line -> <<", ">>; _ -> <<",\n\t">> end)/binary, UnusedFun/binary>>, To};
+calc_text_pos([#{range := #{to := {Line, _Col}}} | _], UnusedFun) ->
+    {<<"-export([", UnusedFun/binary, "]).\n">>, {Line + 1, 1}}.
 
 -spec ignore_variable(uri(), range(), binary(), [binary()]) -> [map()].
 ignore_variable(Uri, Range, _Data, [UnusedVariable]) ->
