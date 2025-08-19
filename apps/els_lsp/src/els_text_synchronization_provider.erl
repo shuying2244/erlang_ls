@@ -24,9 +24,19 @@ options() ->
     | noresponse
     | {async, uri(), pid()}.
 handle_request({did_open, Params}) ->
-    ok = els_text_synchronization:did_open(Params),
-    #{<<"textDocument">> := #{<<"uri">> := Uri}} = Params,
-    {diagnostics, Uri, els_diagnostics:run_diagnostics(Uri)};
+    #{<<"textDocument">> := #{<<"uri">> := Uri, <<"version">> := Version}} = Params,
+    Jobs =
+        case els_dt_document:lookup(Uri) of
+            {ok, []} ->
+                ok = els_text_synchronization:did_open(Params),
+                els_diagnostics:run_diagnostics(Uri);
+            {ok, [#{version := Ver}]} when Ver /= Version ->
+                ok = els_text_synchronization:did_open(Params),
+                els_diagnostics:run_diagnostics(Uri);
+            _ ->
+                []
+        end,
+    {diagnostics, Uri, Jobs};
 handle_request({did_change, Params}) ->
     #{<<"textDocument">> := #{<<"uri">> := Uri}} = Params,
     case els_text_synchronization:did_change(Params) of
