@@ -28,6 +28,18 @@
 %% API
 %%==============================================================================
 
+-spec set_app_path(uri()) -> ok.
+set_app_path(Uri) ->
+    Root = els_config:get(root_uri),
+    case string:split(Uri, "/apps") of
+        [Root, Rest] ->
+            case string:split(Rest, "/src") of
+                [AppPath, _] -> put(app_path, AppPath);
+                _ -> ok
+            end;
+        _ -> ok
+    end.
+
 -spec goto_definition(uri(), els_poi:poi()) ->
     {ok, goto_definition()} | {error, any()}.
 goto_definition(
@@ -43,13 +55,14 @@ goto_definition(
         [] -> {error, nothing_in_scope}
     end;
 goto_definition(
-    _Uri,
+    AppUri,
     #{kind := Kind, id := {M, F, A}}
 ) when
     Kind =:= application;
     Kind =:= implicit_fun;
     Kind =:= import_entry
 ->
+    set_app_path(AppUri),
     case els_utils:find_module(M) of
         {ok, Uri} -> defs_to_res(find(Uri, function, {F, A}));
         {error, Error} -> {error, Error}
