@@ -130,7 +130,7 @@ goto_definition(Uri, [POI | Rest]) ->
 -spec match_incomplete(binary(), pos()) -> [els_poi:poi()].
 match_incomplete(Text, {Line, Col} = Pos) ->
     %% Try parsing subsets of text to find a matching POI at Pos
-    case match_after(Text, Pos) ++ match_line(Text, Pos) of
+    case match_after(Text, Pos) of
         [] ->
             %% Still found nothing, let's analyze the tokens to kludge a POI
             LineText = els_text:line(Text, Line),
@@ -214,13 +214,6 @@ kludge_match([_ | T], Pos) ->
 match_after(Text, {Line, Character}) ->
     %% Try to parse current line and the lines after it
     POIs = els_incomplete_parser:parse_after(Text, Line),
-    MatchingPOIs = match_pois(POIs, {1, Character + 1}),
-    fix_line_offsets(MatchingPOIs, Line).
-
--spec match_line(binary(), pos()) -> [els_poi:poi()].
-match_line(Text, {Line, Character}) ->
-    %% Try to parse only current line
-    POIs = els_incomplete_parser:parse_line(Text, Line),
     MatchingPOIs = match_pois(POIs, {1, Character + 1}),
     fix_line_offsets(MatchingPOIs, Line).
 
