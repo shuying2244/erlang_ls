@@ -437,8 +437,13 @@ cmd_receive(Port) ->
 -spec prioritize_uris([uri()]) -> [uri()].
 prioritize_uris(Uris) ->
     Root = els_config:get(root_uri),
+    RootUri =
+        case get(app_path) of
+            undefined -> Root;
+            AppPath -> <<Root/binary, "/apps", AppPath/binary>>
+        end,
     AppsPaths = els_config:get(apps_paths),
-    Prio = [{score_uri(Uri, Root, AppsPaths), Uri} || Uri <- Uris],
+    Prio = [{score_uri(Uri, RootUri, AppsPaths), Uri} || Uri <- Uris],
     [Uri || {_, Uri} <- lists:sort(Prio)].
 
 -spec score_uri(uri(), uri(), [file:name()]) -> tuple().
