@@ -731,8 +731,9 @@ inclusion_range(IncludePath, Document) ->
     [els_poi:poi_range()].
 inclusion_range(IncludePath, Document, include) ->
     POIs = els_dt_document:pois(Document, [include]),
-    IncludeId = els_utils:include_id(IncludePath),
-    [Range || #{id := Id, range := Range} <- POIs, Id =:= IncludeId];
+    IncludeParts = filename:split(IncludePath),
+    [Range || #{id := Id, range := Range} <- POIs,
+        is_list(Id) andalso lists:suffix(filename:split(Id), IncludeParts)];
 inclusion_range(IncludePath, Document, include_lib) ->
     POIs = els_dt_document:pois(Document, [include_lib]),
     IncludeId = els_utils:include_lib_id(absolute_path(IncludePath)),
