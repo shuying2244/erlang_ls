@@ -6,8 +6,7 @@
         kernel,
         stdlib,
         yamerl,
-        redbug,
-        json_polyfill
+        redbug
     ]},
     {env, [
         {io_device, standard_io},
