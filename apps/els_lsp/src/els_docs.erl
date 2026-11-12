@@ -65,11 +65,16 @@ docs(Uri, #{kind := macro, id := Name} = POI) ->
             is_list(Args); is_atom(Name)
         ->
             NameStr = macro_signature(Name, Args),
-
             ValueText = get_valuetext(DefUri, ValueRange),
-
-            Line = lists:flatten(["?", NameStr, " = ", ValueText]),
-            [{code_line, Line}];
+            #{to := {Line, Col}} = ValueRange,
+            Text =
+                case macro_trailing_comment(DefUri, Line, Col) of
+                    [] ->
+                        lists:flatten(["?", NameStr, " = ", ValueText]);
+                    Comment ->
+                        lists:flatten(["?", NameStr, " = ", ValueText, " ", Comment])
+                end,
+            [{code_line, Text}];
         _ ->
             []
     end;
@@ -254,6 +259,21 @@ type_docs(_Type, M, F, A, false = _DocsMemo) ->
 get_valuetext(DefUri, #{from := From, to := To}) ->
     {ok, #{text := Text}} = els_utils:lookup_document(DefUri),
     els_utils:to_list(els_text:range(Text, From, To)).
+
+%% Comment on the same line as the macro body, after `-define(Name, Body).`.
+-spec macro_trailing_comment(uri(), pos_integer(), pos_integer()) -> string().
+macro_trailing_comment(Uri, Line, Col) ->
+    {ok, #{text := Text}} = els_utils:lookup_document(Uri),
+    SourceLine = els_text:line(Text, Line - 1),
+    Skip = min(max(Col - 1, 0), byte_size(SourceLine)),
+    Rest = binary:part(SourceLine, Skip, byte_size(SourceLine) - Skip),
+    case binary:match(Rest, <<"%">>) of
+        {Pos, _} ->
+            Comment = binary:part(Rest, Pos, byte_size(Rest) - Pos),
+            string:trim(els_utils:to_list(Comment), trailing);
+        nomatch ->
+            []
+    end.
 
 -spec signature(application_type(), atom(), atom(), non_neg_integer()) ->
     string().
