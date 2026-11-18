@@ -166,12 +166,12 @@ incoming_calls(Config) ->
                     range =>
                         #{
                             'end' => #{character => 29, line => 10},
-                            start => #{character => 2, line => 10}
+                            start => #{character => 19, line => 10}
                         },
                     selectionRange =>
                         #{
                             'end' => #{character => 29, line => 10},
-                            start => #{character => 2, line => 10}
+                            start => #{character => 19, line => 10}
                         },
                     uri => UriB
                 },
@@ -179,7 +179,7 @@ incoming_calls(Config) ->
                 [
                     #{
                         'end' => #{character => 29, line => 10},
-                        start => #{character => 2, line => 10}
+                        start => #{character => 19, line => 10}
                     }
                 ]
         },

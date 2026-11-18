@@ -75,7 +75,8 @@ path(Uri, IsWindows) ->
 
 -spec uri(path()) -> uri().
 uri(Path) ->
-    [Head | Tail] = filename:split(Path),
+    %% file:path_open/3 返回字符串。先转成二进制再切分，盘符的百分号编码才一致。
+    [Head | Tail] = filename:split(els_utils:to_binary(Path)),
     {Host, Path1} =
         case {els_utils:is_windows(), Head} of
             {false, <<"/">>} ->
@@ -83,9 +84,16 @@ uri(Path) ->
             {true, X} when X =:= <<"//">> orelse X =:= <<"\\\\">> ->
                 [H | T] = Tail,
                 {H, uri_join(T)};
+            {true, <<DriveLetter, $:, _/binary>>} when
+                (DriveLetter >= $A andalso DriveLetter =< $Z) orelse
+                    (DriveLetter >= $a andalso DriveLetter =< $z)
+            ->
+                % 只编码真正的盘符前缀，例如 "c:/" -> "c%3A"。
+                H1 = <<DriveLetter, "%3A">>,
+                {<<>>, uri_join([H1 | Tail])};
             {true, _} ->
-                % Strip the trailing slash from the first component
-                H1 = <<(string:slice(Head, 0, 1))/binary, "%3A">>,
+                % 不是盘符，沿用原来的前两个字符，避免把 Unix 路径写成盘符。
+                H1 = string:slice(Head, 0, 2),
                 {<<>>, uri_join([H1 | Tail])}
         end,
 
@@ -137,7 +145,7 @@ path_uri_test_() ->
 
 path_windows_test() ->
     ?assertEqual(
-        <<"C:/foo/bar.erl">>,
+        <<"c:/foo/bar.erl">>,
         path(<<"file:///C%3A/foo/bar.erl">>, true)
     ).
 -endif.

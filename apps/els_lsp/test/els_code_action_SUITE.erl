@@ -163,21 +163,48 @@ export_unused_function(Config) ->
                                         range =>
                                             #{
                                                 'end' => #{
-                                                    character => 0,
-                                                    line => ?COMMENTS_LINES + 3
+                                                    character => 35,
+                                                    line => ?COMMENTS_LINES + 2
                                                 },
                                                 start => #{
-                                                    character => 0,
-                                                    line => ?COMMENTS_LINES + 3
+                                                    character => 35,
+                                                    line => ?COMMENTS_LINES + 2
                                                 }
                                             },
-                                        newText => <<"-export([function_c/0]).\n">>
+                                        newText => <<", function_c/0">>
                                     }
                                 ]
                         }
                 },
                 kind => <<"quickfix">>,
                 title => <<"Export function_c/0">>
+            },
+            #{
+                edit => #{
+                    changes =>
+                        #{
+                            binary_to_atom(Uri, utf8) =>
+                                [
+                                    #{
+                                        range =>
+                                            #{
+                                                'end' => #{
+                                                    character => 0,
+                                                    line => ?COMMENTS_LINES + 11
+                                                },
+                                                start => #{
+                                                    character => 0,
+                                                    line => ?COMMENTS_LINES + 11
+                                                }
+                                            },
+                                        newText =>
+                                            <<"-compile({nowarn_unused_function, [function_c/0]}).\n">>
+                                    }
+                                ]
+                        }
+                },
+                kind => <<"quickfix">>,
+                title => <<"Nowarn function_c/0">>
             }
         ],
     ?assertEqual(Expected, Result),
@@ -994,10 +1021,10 @@ browse_docs(Config) ->
         Result3
     ),
     %% lists:sort(L),
-    %% ^
+    %%      ^
     Range4 = els_protocol:range(#{
-        from => {5, 5},
-        to => {5, 6}
+        from => {5, 11},
+        to => {5, 12}
     }),
     #{result := Result4} =
         els_client:document_codeaction(Uri, Range4, []),
@@ -1094,10 +1121,10 @@ browse_docs(Config) ->
         Result6
     ),
     %% my_dep_mod:my_function().
-    %% ^
+    %%            ^
     Range7 = els_protocol:range(#{
-        from => {10, 5},
-        to => {10, 6}
+        from => {10, 16},
+        to => {10, 17}
     }),
     #{result := Result7} =
         els_client:document_codeaction(Uri, Range7, []),

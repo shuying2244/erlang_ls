@@ -128,7 +128,8 @@ application_local(Config) ->
 -spec application_remote(config()) -> ok.
 application_remote(Config) ->
     Uri = ?config(code_navigation_uri, Config),
-    #{result := Locations} = els_client:references(Uri, 32, 13),
+    %% 第 25 列是 `do`。模块名是单独的 POI。
+    #{result := Locations} = els_client:references(Uri, 32, 25),
     ExpectedLocations = [
         #{
             uri => Uri,
@@ -136,7 +137,7 @@ application_remote(Config) ->
         },
         #{
             uri => Uri,
-            range => #{from => {32, 3}, to => {32, 27}}
+            range => #{from => {32, 25}, to => {32, 27}}
         },
         #{
             uri => Uri,
@@ -171,7 +172,7 @@ function_multiple_clauses(Config) ->
     ExpectedLocations = [
         #{
             uri => UriCaller,
-            range => #{from => {16, 3}, to => {16, 30}}
+            range => #{from => {16, 14}, to => {16, 30}}
         },
         #{
             uri => UriCaller,
@@ -209,7 +210,7 @@ fun_remote(Config) ->
         },
         #{
             uri => Uri,
-            range => #{from => {32, 3}, to => {32, 27}}
+            range => #{from => {32, 25}, to => {32, 27}}
         },
         #{
             uri => Uri,
@@ -313,7 +314,7 @@ module(Config) ->
         },
         #{
             uri => LocUri,
-            range => #{from => {32, 3}, to => {32, 27}}
+            range => #{from => {32, 25}, to => {32, 27}}
         },
         #{
             uri => LocUri,
@@ -405,9 +406,16 @@ record_field(Config) ->
 included_record(Config) ->
     Uri = ?config(code_navigation_uri, Config),
     HeaderUri = ?config(code_navigation_h_uri, Config),
+    IncludedRecordExprUri = ?config(hover_record_expr_uri, Config),
 
+    %% record 引用按 id 全局查找，因此另一个头文件里的
+    %% included_record_a 也会出现。按起始位置排序。
     ExpectedRecordLocations =
         [
+            #{
+                uri => IncludedRecordExprUri,
+                range => #{from => {15, 3}, to => {15, 21}}
+            },
             #{
                 uri => Uri,
                 range => #{from => {52, 41}, to => {52, 59}}
@@ -591,7 +599,7 @@ refresh_after_watched_file_deleted(Config) ->
     ExpectedLocationsBefore = [
         #{
             uri => UriB,
-            range => #{from => {6, 3}, to => {6, 22}}
+            range => #{from => {6, 18}, to => {6, 22}}
         }
     ],
     #{result := LocationsBefore} = els_client:references(UriA, 5, 2),
@@ -612,7 +620,7 @@ refresh_after_watched_file_changed(Config) ->
     ExpectedLocationsBefore = [
         #{
             uri => UriB,
-            range => #{from => {6, 3}, to => {6, 22}}
+            range => #{from => {6, 18}, to => {6, 22}}
         }
     ],
     #{result := LocationsBefore} = els_client:references(UriA, 5, 2),
@@ -629,11 +637,11 @@ refresh_after_watched_file_changed(Config) ->
     ExpectedLocationsAfter = [
         #{
             uri => UriB,
-            range => #{from => {6, 3}, to => {6, 22}}
+            range => #{from => {6, 18}, to => {6, 22}}
         },
         #{
             uri => UriB,
-            range => #{from => {6, 26}, to => {6, 45}}
+            range => #{from => {6, 41}, to => {6, 45}}
         }
     ],
     #{result := LocationsAfter} = els_client:references(UriA, 5, 2),
@@ -649,7 +657,7 @@ refresh_after_watched_file_added(Config) ->
     ExpectedLocationsBefore = [
         #{
             uri => UriB,
-            range => #{from => {6, 3}, to => {6, 22}}
+            range => #{from => {6, 18}, to => {6, 22}}
         }
     ],
     #{result := LocationsBefore} = els_client:references(UriA, 5, 2),
@@ -665,11 +673,11 @@ refresh_after_watched_file_added(Config) ->
     ExpectedLocationsAfter = [
         #{
             uri => NewUriC,
-            range => #{from => {6, 3}, to => {6, 22}}
+            range => #{from => {6, 18}, to => {6, 22}}
         },
         #{
             uri => UriB,
-            range => #{from => {6, 3}, to => {6, 22}}
+            range => #{from => {6, 18}, to => {6, 22}}
         }
     ],
     #{result := LocationsAfter} = els_client:references(UriA, 5, 2),
@@ -685,7 +693,7 @@ ignore_open_watched_file_added(Config) ->
     ExpectedLocationsBefore = [
         #{
             uri => UriB,
-            range => #{from => {6, 3}, to => {6, 22}}
+            range => #{from => {6, 18}, to => {6, 22}}
         }
     ],
     #{result := LocationsBefore} = els_client:references(UriA, 5, 2),
@@ -703,7 +711,7 @@ ignore_open_watched_file_added(Config) ->
     ExpectedLocationsOpen = [
         #{
             uri => UriB,
-            range => #{from => {6, 3}, to => {6, 22}}
+            range => #{from => {6, 18}, to => {6, 22}}
         }
     ],
     #{result := LocationsOpen} = els_client:references(UriA, 5, 2),
@@ -715,11 +723,11 @@ ignore_open_watched_file_added(Config) ->
     ExpectedLocationsClose = [
         #{
             uri => NewUriC,
-            range => #{from => {6, 3}, to => {6, 22}}
+            range => #{from => {6, 18}, to => {6, 22}}
         },
         #{
             uri => UriB,
-            range => #{from => {6, 3}, to => {6, 22}}
+            range => #{from => {6, 18}, to => {6, 22}}
         }
     ],
     #{result := LocationsClose} = els_client:references(UriA, 5, 2),

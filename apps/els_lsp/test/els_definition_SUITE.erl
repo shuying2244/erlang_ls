@@ -115,7 +115,7 @@ application_local(Config) ->
 -spec application_remote(config()) -> ok.
 application_remote(Config) ->
     Uri = ?config(code_navigation_uri, Config),
-    Def = els_client:definition(Uri, 32, 13),
+    Def = els_client:definition(Uri, 32, 25),
     #{result := [#{range := Range, uri := DefUri}]} = Def,
     ?assertEqual(?config(code_navigation_extra_uri, Config), DefUri),
     ?assertEqual(
@@ -255,7 +255,7 @@ multiple_atom_instances_diff_mod(Config) ->
 definition_after_closing(Config) ->
     Uri = ?config(code_navigation_uri, Config),
     ExtraUri = ?config(code_navigation_extra_uri, Config),
-    Def = els_client:definition(Uri, 32, 13),
+    Def = els_client:definition(Uri, 32, 25),
     #{result := [#{range := Range, uri := DefUri}]} = Def,
     ?assertEqual(ExtraUri, DefUri),
     ?assertEqual(
@@ -265,7 +265,7 @@ definition_after_closing(Config) ->
 
     %% Close file, get definition
     ok = els_client:did_close(ExtraUri),
-    Def1 = els_client:definition(Uri, 32, 13),
+    Def1 = els_client:definition(Uri, 32, 25),
     #{result := [#{range := Range, uri := DefUri}]} = Def1,
     ok.
 

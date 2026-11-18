@@ -64,7 +64,8 @@ end_per_testcase(TestCase, Config) ->
 -spec gen_server_call(config()) -> ok.
 gen_server_call(Config) ->
     Uri = ?config(my_gen_server_uri, Config),
-    #{result := Result} = els_client:implementation(Uri, 30, 10),
+    %% 第 14 列是 start_link。模块名是单独的 POI。
+    #{result := Result} = els_client:implementation(Uri, 30, 14),
     Expected = [
         #{
             range =>

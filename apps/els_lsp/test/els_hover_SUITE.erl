@@ -185,7 +185,8 @@ local_call_edoc(Config) ->
 
 remote_call_edoc(Config) ->
     Uri = ?config(hover_docs_caller_uri, Config),
-    #{result := Result} = els_client:hover(Uri, 23, 12),
+    %% 光标在 `edoc` 上，不在模块名上。远程调用分成两个 POI。
+    #{result := Result} = els_client:hover(Uri, 23, 14),
     ?assert(maps:is_key(contents, Result)),
     Contents = maps:get(contents, Result),
     Value =
@@ -626,7 +627,8 @@ nonexisting_type(Config) ->
 
 nonexisting_module(Config) ->
     Uri = ?config(hover_nonexisting_uri, Config),
-    #{result := Result} = els_client:hover(Uri, 6, 12),
+    %% 光标在 `main` 上，不在模块名上。远程调用分成两个 POI。
+    #{result := Result} = els_client:hover(Uri, 6, 15),
     Expected = #{
         contents =>
             #{
