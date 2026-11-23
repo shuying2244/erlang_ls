@@ -198,7 +198,10 @@ export_unused_function(Config) ->
                                                 }
                                             },
                                         newText =>
-                                            <<"-compile({nowarn_unused_function, [function_c/0]}).\n">>
+                                            <<
+                                                "-compile("
+                                                "{nowarn_unused_function, [function_c/0]}).\n"
+                                            >>
                                     }
                                 ]
                         }

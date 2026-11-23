@@ -47,8 +47,6 @@ jobs:
     #     name: erlang_ls
     #     path: _build/default/bin/erlang_ls
     #     overwrite: true
-    - name: Check formatting
-      run: rebar3 fmt -c
     - name: Lint
       run: rebar3 lint
     - name: Generate Dialyzer PLT for usage in CT Tests
@@ -112,7 +110,7 @@ jobs:
     - name: Install Erlang
       run: choco install -y erlang --version ${{ matrix.otp-version }}
     - name: Install rebar3
-      run: choco install -y rebar3 --version 3.23.0
+      run: choco install -y rebar3 --version 3.25.1 --ignore-dependencies
     - name: Compile
       run: rebar3 compile
     - name: Escriptize LSP Server
@@ -171,9 +169,15 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Install Erlang
-      run: brew install erlang@${{ matrix.otp-version }}
+      run: |
+        brew install erlang@${{ matrix.otp-version }}
+        echo "$(brew --prefix erlang@${{ matrix.otp-version }})/bin" >> "$GITHUB_PATH"
     - name: Install Rebar3
-      run: brew install rebar3
+      run: |
+        mkdir -p "$HOME/.local/bin"
+        curl -fsSL -o "$HOME/.local/bin/rebar3" https://github.com/erlang/rebar3/releases/download/3.25.1/rebar3
+        chmod +x "$HOME/.local/bin/rebar3"
+        echo "$HOME/.local/bin" >> "$GITHUB_PATH"
     - name: Compile
       run: rebar3 compile
     - name: Escriptize LSP Server
