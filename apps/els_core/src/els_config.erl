@@ -57,6 +57,7 @@
     | code_reload
     | elvis_config_path
     | indexing_enabled
+    | upper_case_id
     | compiler_telemetry_enabled
     | refactorerl
     | wrangler
@@ -82,6 +83,7 @@
     search_paths => [path()],
     code_reload => map() | 'disabled',
     indexing_enabled => boolean(),
+    upper_case_id => boolean(),
     compiler_telemetry_enabled => boolean(),
     wrangler => map() | 'notconfigured',
     refactorerl => map() | 'notconfigured',
@@ -169,6 +171,7 @@ do_initialize(RootUri, Capabilities, InitOptions, {ConfigPath, Config}) ->
     EDocCustomTags = maps:get("edoc_custom_tags", Config, []),
 
     IndexingEnabled = maps:get(<<"indexingEnabled">>, InitOptions, true),
+    UpperCaseId = maps:get(<<"upperCaseId">>, InitOptions, true),
 
     RefactorErl = maps:get("refactorerl", Config, notconfigured),
     Providers = maps:get("providers", Config, #{}),
@@ -278,6 +281,7 @@ do_initialize(RootUri, Capabilities, InitOptions, {ConfigPath, Config}) ->
     %% Init Options
     ok = set(capabilities, Capabilities),
     ok = set(indexing_enabled, IndexingEnabled),
+    ok = set(upper_case_id, UpperCaseId),
 
     ok = set(refactorerl, RefactorErl),
     ok = set(formatting, Formatting),

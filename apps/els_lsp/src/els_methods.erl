@@ -400,9 +400,13 @@ textdocument_implementation(Params, State) ->
 %%==============================================================================
 
 -spec workspace_didchangeconfiguration(params(), els_server:state()) -> result().
+workspace_didchangeconfiguration(
+    #{<<"settings">> := #{<<"upperCaseId">> := Enabled}},
+    State
+) when is_boolean(Enabled) ->
+    ok = els_config:set(upper_case_id, Enabled),
+    {noresponse, State};
 workspace_didchangeconfiguration(_Params, State) ->
-    %% Some clients send this notification on startup, even though we
-    %% have no server-side config.  So swallow it without complaining.
     {noresponse, State}.
 
 %%==============================================================================

@@ -1189,20 +1189,29 @@ record_fields_with_var(Document, RecordName) ->
             ]
     end.
 
+%% 驼峰后以 Id 结尾则写成 ID。由插件设置 upperCaseId 控制，默认开启
 -spec format_record_field_with_var(atom(), SnippetSupport :: boolean()) -> binary().
 format_record_field_with_var(Name, true) ->
     Label = atom_to_label(Name),
     Var = els_utils:camel_case(Label),
-    Size = bit_size(Var) - 16,
+    N = byte_size(Var) - 2,
     Var2 =
-        case Size >= 0 andalso Var of
-            <<H:Size, "id">> -> <<H:Size, "ID">>;
-            <<H:Size, "Id">> -> <<H:Size, "ID">>;
+        case upper_case_id_enabled() andalso N >= 0 andalso Var of
+            <<Prefix:N/binary, "Id">> -> <<Prefix/binary, "ID">>;
             _ -> Var
         end,
     <<Label/binary, " = ${1:", Var2/binary, "}">>;
 format_record_field_with_var(Name, false) ->
     atom_to_label(Name).
+
+-spec upper_case_id_enabled() -> boolean().
+upper_case_id_enabled() ->
+    case whereis(els_config) of
+        undefined ->
+            true;
+        _ ->
+            els_config:get(upper_case_id) =/= false
+    end.
 
 -spec find_record_definition(els_dt_document:item(), atom()) -> [els_poi:poi()].
 find_record_definition(Document, RecordName) ->
