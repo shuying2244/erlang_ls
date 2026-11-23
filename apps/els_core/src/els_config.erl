@@ -110,11 +110,13 @@ initialize(RootUri, Capabilities, InitOptions, ErrorReporting) ->
     {GlobalConfigPath, MaybeGlobalConfig} = find_config(global_config_paths()),
     {LocalConfigPath, MaybeLocalConfig} = find_config(ConfigPaths),
     ConfigPath =
-        case LocalConfigPath of
-            undefined ->
+        case {LocalConfigPath, GlobalConfigPath} of
+            {undefined, undefined} ->
                 report_missing_config(ErrorReporting),
+                undefined;
+            {undefined, _} ->
                 GlobalConfigPath;
-            _ ->
+            {_, _} ->
                 LocalConfigPath
         end,
     Config =
